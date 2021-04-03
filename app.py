@@ -1,11 +1,10 @@
+from collections import deque
+import logging
+import RPi.GPIO as GPIO
 from flask import make_response, Flask, request
 from flask_apscheduler import APScheduler
-import RPi.GPIO as GPIO
-import time
-
 from flask_cors import cross_origin
 from gpiozero import CPUTemperature
-from collections import deque
 
 app = Flask(__name__)
 
@@ -24,6 +23,13 @@ GPIO.output(fanPin, GPIO.HIGH)
 cpu = CPUTemperature()
 
 temp_queue = deque(maxlen=1440)
+
+app.logger.setLevel(logging.INFO)
+formatter = logging.Formatter(f'%(asctime)s - %(levelname)s - %(message)s')
+consoleHandler = logging.StreamHandler()
+consoleHandler.setFormatter(formatter)
+app.logger.addHandler(consoleHandler)
+app.logger.info("App started.")
 
 
 @app.route('/', methods=['POST'])
@@ -71,11 +77,14 @@ def get_temperature_queue():
     return make_response({"temperature_queue": list(temp_queue)}, 200)
 
 scheduler = APScheduler()
-@scheduler.task('interval', id='control_fan', seconds=60)
+@scheduler.task('interval', id='control_fan', seconds=5)
 def control_fan():
+    app.logger.info("Pre global definition")
     global high_threshold, low_threshold, cpu, temp_queue
 
+    app.logger.info("Scheduler job running")
     temp_queue.append(cpu.temperature)
+    app.logger.info(cpu.temperature)
 
     if float(cpu.temperature) > high_threshold:
         GPIO.output(fanPin, GPIO.HIGH)
