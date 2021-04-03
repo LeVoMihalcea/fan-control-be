@@ -30,11 +30,11 @@ def set_thresholds():
     data = request.get_json()
     something_set = False
 
-    if "high_threshold" in data.keys() && data["high_threshold"]:
+    if "high_threshold" in data.keys() and data["high_threshold"]:
         something_set = True
         high_threshold = data["high_threshold"]
 
-    if "low_threshold" in data.keys() && data["low_threshold"]:
+    if "low_threshold" in data.keys() and data["low_threshold"]:
         something_set = True
         low_threshold = data["low_threshold"]
 
