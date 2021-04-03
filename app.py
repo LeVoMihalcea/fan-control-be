@@ -77,14 +77,12 @@ def get_temperature_queue():
     return make_response({"temperature_queue": list(temp_queue)}, 200)
 
 scheduler = APScheduler()
-@scheduler.task('interval', id='control_fan', seconds=5)
+@scheduler.task('interval', id='control_fan', seconds=60)
 def control_fan():
-    app.logger.info("Pre global definition")
     global high_threshold, low_threshold, cpu, temp_queue
 
-    app.logger.info("Scheduler job running")
     temp_queue.append(cpu.temperature)
-    app.logger.info(cpu.temperature)
+    app.logger.info("Temperature: " + cpu.temperature)
 
     if float(cpu.temperature) > high_threshold:
         GPIO.output(fanPin, GPIO.HIGH)
