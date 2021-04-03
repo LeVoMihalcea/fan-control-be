@@ -1,5 +1,5 @@
 from flask import make_response, Flask, request
-from apscheduler.schedulers.background import BackgroundScheduler
+from flask_apscheduler import APScheduler
 import RPi.GPIO as GPIO
 import time
 
@@ -70,7 +70,8 @@ def get_temperature_queue():
     global temp_queue
     return make_response({"temperature_queue": list(temp_queue)}, 200)
 
-
+scheduler = APScheduler()
+@scheduler.task('inteval', id='control_fan', seconds=60)
 def control_fan():
     global high_threshold, low_threshold, cpu, temp_queue
 
@@ -85,9 +86,8 @@ def control_fan():
 
 if __name__ == '__main__':
     try:
-        sched = BackgroundScheduler(daemon=True)
-        sched.add_job(control_fan, 'interval', minutes=1)
-        sched.start()
+        scheduler.init_app(app)
+        scheduler.start()
         app.run(host="0.0.0.0", port=10040)
     except KeyboardInterrupt:  # If CTRL+C is pressed, exit cleanly:
         GPIO.cleanup()  # cleanup all GPIO
