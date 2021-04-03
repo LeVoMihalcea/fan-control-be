@@ -82,7 +82,7 @@ def control_fan():
     global high_threshold, low_threshold, cpu, temp_queue
 
     temp_queue.append(cpu.temperature)
-    app.logger.info("Temperature: " + cpu.temperature)
+    app.logger.info("Temperature: " + str(cpu.temperature))
 
     if float(cpu.temperature) > high_threshold:
         GPIO.output(fanPin, GPIO.HIGH)
