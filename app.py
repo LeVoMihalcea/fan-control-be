@@ -75,7 +75,6 @@ scheduler = APScheduler()
 def control_fan():
     global high_threshold, low_threshold, cpu, temp_queue
 
-    print(cpu.temperature)
     temp_queue.append(cpu.temperature)
 
     if float(cpu.temperature) > high_threshold:
