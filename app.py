@@ -2,6 +2,8 @@ from flask import make_response, Flask, request
 from apscheduler.schedulers.background import BackgroundScheduler
 import RPi.GPIO as GPIO
 import time
+
+from flask_cors import cross_origin
 from gpiozero import CPUTemperature
 from collections import deque
 
@@ -25,6 +27,7 @@ temp_queue = deque(maxlen=1440)
 
 
 @app.route('/', methods=['POST'])
+@cross_origin()
 def set_thresholds():
     global high_threshold, low_threshold
     data = request.get_json()
@@ -45,6 +48,7 @@ def set_thresholds():
 
 
 @app.route('/', methods=['GET'])
+@cross_origin()
 def get_thresholds():
     global high_threshold, low_threshold
 
@@ -54,12 +58,14 @@ def get_thresholds():
 
 
 @app.route("/temperature", methods=['GET'])
+@cross_origin()
 def get_temperature():
     global cpu
     return make_response({"temperature": cpu.temperature}, 200)
 
 
 @app.route("/temperature/queue", methods=['GET'])
+@cross_origin()
 def get_temperature_queue():
     global temp_queue
     return make_response({"temperature_queue": list(temp_queue)}, 200)
