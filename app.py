@@ -94,6 +94,6 @@ if __name__ == '__main__':
     try:
         scheduler.init_app(app)
         scheduler.start()
-        app.run(host="0.0.0.0", port=10040)
+        app.run(host="0.0.0.0", port=5000)
     except KeyboardInterrupt:  # If CTRL+C is pressed, exit cleanly:
         GPIO.cleanup()  # cleanup all GPIO
