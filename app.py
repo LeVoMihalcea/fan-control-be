@@ -95,6 +95,7 @@ def boost():
 
 
 @app.route("/silentmode", methods=['GET'])
+@cross_origin()
 def get_silent_mode():
     return make_response({"silent_mode": silent_mode}, 200)
 
