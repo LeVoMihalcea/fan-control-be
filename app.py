@@ -114,10 +114,10 @@ def control_fan():
 
 def drive_fan(cpu, high_threshold, low_threshold):
     global boost_pass
+    if boost_pass > 0:
+        boost_pass -= 1
+        return
     if float(cpu.temperature) > high_threshold:
-        if boost_pass > 0:
-            boost_pass -= 1
-            return
         GPIO.output(fanPin, GPIO.HIGH + (10 if silent_mode else 0))
     elif float(cpu.temperature) < low_threshold:
         GPIO.output(fanPin, GPIO.LOW)
