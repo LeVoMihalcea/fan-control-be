@@ -1,5 +1,6 @@
 from collections import deque
 import logging
+from datetime import datetime, time
 import RPi.GPIO as GPIO
 from flask import make_response, Flask, request
 from flask_apscheduler import APScheduler
@@ -10,6 +11,8 @@ app = Flask(__name__)
 
 high_threshold = 60
 low_threshold = 40
+boost_pass = 0
+silent_mode = False
 
 # Pin Definitons:
 fanPin = 17
@@ -30,6 +33,8 @@ consoleHandler = logging.StreamHandler()
 consoleHandler.setFormatter(formatter)
 app.logger.addHandler(consoleHandler)
 app.logger.info("App started.")
+
+scheduler = APScheduler()
 
 
 @app.route('/', methods=['POST'])
@@ -76,18 +81,46 @@ def get_temperature_queue():
     global temp_queue
     return make_response({"temperature_queue": list(temp_queue)}, 200)
 
-scheduler = APScheduler()
+
+@app.route("/boost", methods=['GET'])
+@cross_origin()
+def boost():
+    global boost_pass
+    GPIO.output(fanPin, GPIO.HIGH)
+    boost_pass = 5
+
+
+@app.route("/silentmode", methods=['GET'])
+def get_silent_mode():
+    return make_response({"silent_mode": silent_mode}, 200)
+
+
 @scheduler.task('interval', id='control_fan', seconds=60)
 def control_fan():
-    global high_threshold, low_threshold, cpu, temp_queue
+    global high_threshold, low_threshold, cpu, temp_queue, boost_pass
 
-    temp_queue.append(cpu.temperature)
-    app.logger.info("Temperature: " + str(cpu.temperature))
+    dt = datetime.strptime('01:45:56PM', '%H:%M:%S%p')
+    temp_queue.append([cpu.temperature, dt.strftime('%I:%M:%S')])
+    app.logger.info("Temperature: " + str([cpu.temperature, dt.strftime('%I:%M:%S')]))
 
+    check_if_silent_mode()
+    drive_fan(cpu, high_threshold, low_threshold)
+
+
+def drive_fan(cpu, high_threshold, low_threshold):
+    global boost_pass
     if float(cpu.temperature) > high_threshold:
+        if boost_pass > 0:
+            boost_pass -= 1
+            return
         GPIO.output(fanPin, GPIO.HIGH)
     elif float(cpu.temperature) < low_threshold:
         GPIO.output(fanPin, GPIO.LOW)
+
+
+def check_if_silent_mode():
+    global silent_mode
+    silent_mode = time(23, 0) <= time() or time() <= time(8, 0)
 
 
 if __name__ == '__main__':
