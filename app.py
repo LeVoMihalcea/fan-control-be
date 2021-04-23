@@ -99,9 +99,9 @@ def get_silent_mode():
 def control_fan():
     global high_threshold, low_threshold, cpu, temp_queue, boost_pass
 
-    dt = datetime.strptime('01:45:56PM', '%H:%M:%S%p')
-    temp_queue.append([cpu.temperature, dt.strftime('%I:%M:%S')])
-    app.logger.info("Temperature: " + str([cpu.temperature, dt.strftime('%I:%M:%S')]))
+    current_time = str(datetime.now()).split()[1].split('.')[0]
+    temp_queue.append([cpu.temperature, current_time])
+    app.logger.info("Temperature: " + str([cpu.temperature, current_time]))
 
     check_if_silent_mode()
     drive_fan(cpu, high_threshold, low_threshold)
