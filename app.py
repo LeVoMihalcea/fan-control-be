@@ -2,6 +2,7 @@ from collections import deque
 import logging
 from datetime import datetime, time
 import RPi.GPIO as GPIO
+import pytz
 from flask import make_response, Flask, request
 from flask_apscheduler import APScheduler
 from flask_cors import cross_origin
@@ -35,6 +36,8 @@ app.logger.addHandler(consoleHandler)
 app.logger.info("App started.")
 
 scheduler = APScheduler()
+
+timezone = pytz.timezone("EET")
 
 
 @app.route('/', methods=['POST'])
@@ -99,7 +102,7 @@ def get_silent_mode():
 def control_fan():
     global high_threshold, low_threshold, cpu, temp_queue, boost_pass
 
-    current_time = str(datetime.now()).split()[1].split('.')[0]
+    current_time = str(datetime.now().astimezone(timezone)).split()[1].split('.')[0]
     temp_queue.append([cpu.temperature, current_time])
     app.logger.info("Temperature: " + str([cpu.temperature, current_time]))
 
@@ -113,7 +116,7 @@ def drive_fan(cpu, high_threshold, low_threshold):
         if boost_pass > 0:
             boost_pass -= 1
             return
-        GPIO.output(fanPin, GPIO.HIGH)
+        GPIO.output(fanPin, GPIO.HIGH + (10 if silent_mode else 0))
     elif float(cpu.temperature) < low_threshold:
         GPIO.output(fanPin, GPIO.LOW)
 
