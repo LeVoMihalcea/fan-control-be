@@ -91,7 +91,7 @@ def boost():
     global boost_pass
     GPIO.output(fanPin, GPIO.HIGH)
     boost_pass = 5
-    return make_response(200)
+    return make_response("", 200)
 
 
 @app.route("/silentmode", methods=['GET'])
