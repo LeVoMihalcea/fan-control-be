@@ -125,7 +125,7 @@ def drive_fan(cpu, high_threshold, low_threshold):
 
 def check_if_silent_mode():
     global silent_mode
-    silent_mode = time(21, 0) <= time() or time() <= time(6, 0)
+    silent_mode = time(21, 0) <= datetime.today().time() or datetime.today().time() <= time(6, 0)
 
 
 if __name__ == '__main__':
