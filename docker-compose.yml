@@ -1,0 +1,25 @@
+version: "2.1"
+
+services:
+
+  fan-control-be:
+    image: fan-control-be
+    container_name: fan-control-be
+    restart: unless-stopped
+    tty: true
+    networks:
+      - web
+      - default
+    privileged: true
+    expose:
+      - "5000"
+    labels:
+      - "traefik.backend=fan-control-be"
+      - "traefik.docker.network=web"
+      - "traefik.frontend.rule=Host:fan-control-be.sudo.rocks"
+      - "traefik.enable=true"
+      - "traefik.port=5000"
+
+networks:
+  web:
+    external: true
