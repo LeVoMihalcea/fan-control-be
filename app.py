@@ -25,7 +25,7 @@ fanPin = 17
 GPIO.setmode(GPIO.BCM)  # Broadcom pin-numbering scheme
 GPIO.setup(fanPin, GPIO.OUT)  # LED pin set as output
 
-# Initial of the relay
+# Initial state of the relay
 GPIO.output(fanPin, enable_signal)
 cpu = CPUTemperature()
 
