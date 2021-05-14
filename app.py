@@ -14,6 +14,9 @@ high_threshold = 60
 low_threshold = 40
 boost_pass = 0
 silent_mode = False
+reverse_relay = False  # by default the relay should turn on when it is set to HIGH
+enable_signal = GPIO.HIGH if not reverse_relay else GPIO.LOW
+disable_signal = GPIO.LOW if not reverse_relay else GPIO.HIGH
 
 # Pin Definitons:
 fanPin = 17
@@ -22,8 +25,8 @@ fanPin = 17
 GPIO.setmode(GPIO.BCM)  # Broadcom pin-numbering scheme
 GPIO.setup(fanPin, GPIO.OUT)  # LED pin set as output
 
-# Initial state for LEDs:
-GPIO.output(fanPin, GPIO.HIGH)
+# Initial of the relay
+GPIO.output(fanPin, enable_signal)
 cpu = CPUTemperature()
 
 temp_queue = deque(maxlen=1440)
@@ -38,6 +41,14 @@ app.logger.info("App started.")
 scheduler = APScheduler()
 
 timezone = pytz.timezone("EET")
+
+
+def enable_fan():
+    GPIO.output(fanPin, enable_signal)
+
+
+def disable_fan():
+    GPIO.output(fanPin, disable_signal)
 
 
 @app.route('/', methods=['POST'])
@@ -89,7 +100,7 @@ def get_temperature_queue():
 @cross_origin()
 def boost():
     global boost_pass
-    GPIO.output(fanPin, GPIO.HIGH)
+    enable_fan()
     boost_pass = 5
     return make_response("", 200)
 
@@ -117,10 +128,10 @@ def drive_fan(cpu, high_threshold, low_threshold):
     if boost_pass > 0:
         boost_pass -= 1
         return
-    if float(cpu.temperature) > high_threshold:
-        GPIO.output(fanPin, GPIO.HIGH + (10 if silent_mode else 0))
+    if float(cpu.temperature) > high_threshold + (10 if silent_mode else 0):
+        enable_fan()
     elif float(cpu.temperature) < low_threshold:
-        GPIO.output(fanPin, GPIO.LOW)
+        disable_fan()
 
 
 def check_if_silent_mode():
