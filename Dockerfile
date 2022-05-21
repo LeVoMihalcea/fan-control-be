@@ -1,4 +1,4 @@
-FROM python:3.9.3-buster
+FROM python:slim-buster
 
 WORKDIR /app
 
